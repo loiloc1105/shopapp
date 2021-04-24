@@ -1,24 +1,44 @@
-import React from "react";
-import { createStore, combineReducers } from "redux";
-import { Provider } from "react-redux";
-import productsReducer from "./store/reducers/products";
-import ShopNavigation from "./navigations/ShopNavigation";
-import { StyleSheet, Text, View } from "react-native";
+import React, { useState } from 'react';
+import { createStore, combineReducers } from 'redux';
+import { Provider } from 'react-redux';
+import { AppLoading } from 'expo';
+import * as Font from 'expo-font';
+import { composeWithDevTools } from 'redux-devtools-extension'
 
-const rootReduccers = combineReducers({
-  products: productsReducer
+import productsReducer from './store/reducers/products';
+import cartReducer from './store/reducers/cart';
+import ShopNavigator from './navigation/ShopNavigator';
+
+const rootReducer = combineReducers({
+  products: productsReducer,
+  cart: cartReducer
 });
 
-const store = createStore(rootReduccers);
+const store = createStore(rootReducer, composeWithDevTools());
 
-const App = () => {
-  return (
-    <Provider store={store}>
-      <ShopNavigation />
-    </Provider>
-  );
+const fetchFonts = () => {
+  return Font.loadAsync({
+    'open-sans': require('./assets/fonts/OpenSans-Regular.ttf'),
+    'open-sans-bold': require('./assets/fonts/OpenSans-Bold.ttf')
+  });
 };
 
-const styles = StyleSheet.create({});
+export default function App() {
+  const [fontLoaded, setFontLoaded] = useState(false);
 
-export default App;
+  if (!fontLoaded) {
+    return (
+      <AppLoading
+        startAsync={fetchFonts}
+        onFinish={() => {
+          setFontLoaded(true);
+        }}
+      />
+    );
+  }
+  return (
+    <Provider store={store}>
+      <ShopNavigator />
+    </Provider>
+  );
+}

@@ -1,108 +1,103 @@
-import React from "react";
+import React from 'react';
 import {
-  StyleSheet,
-  Text,
   View,
+  Text,
   Image,
+  StyleSheet,
+  Button,
   TouchableOpacity,
   TouchableNativeFeedback,
-  Platform,
-  Dimensions,
-  Button
-} from "react-native";
-import Colors from "../../constants/Colors";
-const { width, height } = Dimensions.get("window");
+  Platform
+} from 'react-native';
 
-const ProductItem = (props) => {
-  let TouchCmp = TouchableOpacity;
-  if (Platform.OS === "android" && Platform.Version >= 21) {
-    TouchCmp = TouchableNativeFeedback;
+import Colors from '../../constants/Colors';
+
+const ProductItem = props => {
+  let TouchableCmp = TouchableOpacity;
+
+  if (Platform.OS === 'android' && Platform.Version >= 21) {
+    TouchableCmp = TouchableNativeFeedback;
   }
 
   return (
-    <View style={styles.container}>
-      <TouchCmp onPress={props.onViewDetails} useForeground>
-        <View>
-          <View style={styles.images}>
-            <Image
-              //   resizeMode="stretch"
-              style={styles.imageURL}
-              source={{ uri: props.image }}
-            />
+    <View style={styles.product}>
+      <View style={styles.touchable}>
+        <TouchableCmp onPress={props.onViewDetail} useForeground>
+          <View>
+            <View style={styles.imageContainer}>
+              <Image style={styles.image} source={{ uri: props.image }} />
+            </View>
+            <View style={styles.details}>
+              <Text style={styles.title}>{props.title}</Text>
+              <Text style={styles.price}>${props.price.toFixed(2)}</Text>
+            </View>
+            <View style={styles.actions}>
+              <Button
+                color={Colors.primary}
+                title="View Details"
+                onPress={props.onViewDetail}
+              />
+              <Button
+                color={Colors.primary}
+                title="To Cart"
+                onPress={props.onAddToCart}
+              />
+            </View>
           </View>
-          <View style={styles.content}>
-            <Text style={styles.title}>{props.title}</Text>
-            <Text style={styles.price}>${props.price.toFixed(2)}</Text>
-          </View>
-          <View style={styles.control}>
-            <Button
-              color={Colors.primary}
-              title="View Details"
-              onPress={props.onViewDetails}
-            />
-            <Button
-              color={Colors.primary}
-              title="To Cart"
-              onPress={props.onToCart}
-            />
-          </View>
-        </View>
-      </TouchCmp>
+        </TouchableCmp>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    width: width * 0.95,
-    marginLeft: width * 0.025,
-    marginBottom: width * 0.05,
-    marginTop: width * 0.02,
-    borderWidth: width * 0.002,
-    borderColor: "#888",
-    borderRadius: width * 0.03,
-    backgroundColor: "white",
-    shadowColor: "black",
+  product: {
+    shadowColor: 'black',
     shadowOpacity: 0.26,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 8,
     elevation: 5,
-    overflow: "hidden"
+    borderRadius: 10,
+    backgroundColor: 'white',
+    height: 300,
+    margin: 20
   },
-  images: {
-    width: width * 0.948,
-    height: width * 0.6,
-    position: "relative"
-    // borderWidth:1
+  touchable: {
+    borderRadius: 10,
+    overflow: 'hidden'
   },
-  imageURL: {
-    width: "100%",
-    height: "100%",
-    borderTopRightRadius: width * 0.03,
-    borderTopLeftRadius: width * 0.03
-    // borderWidth:1
+  imageContainer: {
+    width: '100%',
+    height: '60%',
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+    overflow: 'hidden'
   },
-  content: {
-    height: width * 0.15,
-    alignItems: "center",
-    padding: width * 0.01
+  image: {
+    width: '100%',
+    height: '100%'
+  },
+  details: {
+    alignItems: 'center',
+    height: '15%',
+    padding: 10
   },
   title: {
+    fontFamily: 'open-sans-bold',
     fontSize: 18,
-    marginVertical: width * 0.01
+    marginVertical: 2
   },
   price: {
+    fontFamily: 'open-sans',
     fontSize: 14,
-    color: "#888"
+    color: '#888'
   },
-  control: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: width * 0.1,
-    marginBottom: width * 0.02,
-    height: width * 0.1
+  actions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    height: '25%',
+    paddingHorizontal: 20
   }
 });
 
