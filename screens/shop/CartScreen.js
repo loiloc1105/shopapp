@@ -7,8 +7,11 @@ import {
   Button,
   Dimensions
 } from "react-native";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import Colors from "../../constants/Colors";
+import CardItem from "../../components/shop/CardItem";
+import * as cartAtions from "../../store/actions/cart";
+import * as orderActions from "../../store/actions/orders";
 
 const { width, height } = Dimensions.get("window");
 
@@ -16,6 +19,7 @@ const CartScreen = (props) => {
   const productAmount = useSelector((state) => state.cart.totalAmount);
   const cartItems = useSelector((state) => {
     const tranformedCartItem = [];
+    //khi dung object thi phai push items vao object
     for (let key in state.cart.items) {
       tranformedCartItem.push({
         productId: key,
@@ -25,10 +29,12 @@ const CartScreen = (props) => {
         sum: state.cart.items[key].sum
       });
     }
-    return tranformedCartItem;
+    return tranformedCartItem.sort((a, b) =>
+      a.productId > b.productId ? 1 : -1
+    );
   });
-//   console.log(cartItems);
-
+  //   console.log(cartItems);
+  const dispatch = useDispatch();
   return (
     <View style={styles.container}>
       <View style={styles.totalMoney}>
@@ -40,13 +46,35 @@ const CartScreen = (props) => {
           title="Order Now"
           color={Colors.accent}
           disabled={cartItems.length === 0}
+          onPress={() => {
+            dispatch(orderActions.addOrder(cartItems, productAmount)),
+              dispatch(cartAtions.checkOut());
+          }}
         />
       </View>
-      <View>
-        <Text>CART ITEM</Text>
-      </View>
+      <FlatList
+        data={cartItems}
+        keyExtractor={(item) => item.productId}
+        renderItem={(itemData) => (
+          <CardItem
+            quantity={itemData.item.quantity}
+            title={itemData.item.productTitle}
+            total={itemData.item.sum}
+            deletable
+            onRemove={() => {
+              dispatch(cartAtions.removeFromCart(itemData.item.productId));
+            }}
+          />
+        )}
+      />
     </View>
   );
+};
+
+CartScreen.navigationOptions = () => {
+  return {
+    headerTitle: "Cart Screen"
+  };
 };
 
 export default CartScreen;
