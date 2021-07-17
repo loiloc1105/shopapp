@@ -10,6 +10,7 @@ import {
 import { useSelector, useDispatch } from "react-redux";
 import Colors from "../../constants/Colors";
 import CardItem from "../../components/shop/CardItem";
+import Card from '../../components/UI/Card'
 import * as cartAtions from "../../store/actions/cart";
 import * as orderActions from "../../store/actions/orders";
 
@@ -37,7 +38,7 @@ const CartScreen = (props) => {
   const dispatch = useDispatch();
   return (
     <View style={styles.container}>
-      <View style={styles.totalMoney}>
+      <Card style={styles.totalMoney}>
         <Text style={styles.total}>
           Total:
           <Text style={styles.amount}> ${Math.round(productAmount.toFixed(2) *100 ) / 100 }</Text>
@@ -51,7 +52,7 @@ const CartScreen = (props) => {
               dispatch(cartAtions.checkOut());
           }}
         />
-      </View>
+      </Card>
       <FlatList
         data={cartItems}
         keyExtractor={(item) => item.productId}
@@ -90,13 +91,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: width * 0.03,
     padding: width * 0.03,
-    shadowColor: "black",
-    shadowOpacity: 0.26,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 8,
-    elevation: 5,
-    borderRadius: 10,
-    backgroundColor: "white"
   },
   total: {
     fontFamily: "open-sans-bold",
