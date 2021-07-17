@@ -42,6 +42,7 @@ const EditProductScreen = (props) => {
         productAction.createProduct(title, description, imageUrl, +price)
       ); // dung toFixed nen phai +price
     }
+    props.navigation.goBack();
   }, [dispatch, productId, title, description, imageUrl, price]);
 
   useEffect(() => {
