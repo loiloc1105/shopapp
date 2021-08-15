@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useEffect, useCallback, useReducer } from "react";
 import {
   StyleSheet,
   Text,
   TextInput,
   Platform,
   ScrollView,
-  View
+  View,
+  Alert
 } from "react-native";
 import { useSelector, useDispatch } from "react-redux";
 
@@ -13,6 +14,30 @@ import { HeaderButtons, Item } from "react-navigation-header-buttons";
 import HeaderButton from "../../components/UI/HeaderButton";
 
 import * as productAction from "../../store/actions/products";
+const FORM_INPUT_UPDATE = "FORM_INPUT_UPDATE";
+
+const formReducer = (state, action) => {
+  if (action.type === FORM_INPUT_UPDATE) {
+    const updateValue = {
+      ...state.inputValues,
+      [action.input]: action.value
+    };
+    const updateValid = {
+      ...state.inputValid,
+      [action.input]: action.isValid
+    };
+    let updateFormValid = true;
+    for (const key in updateValid) {
+      updateFormValid = updateFormValid && updateValid[key];
+    }
+    return {
+      formValid: updateFormValid,
+      inputValues: updateValue,
+      inputValid: updateValid
+    };
+  }
+  return state;
+};
 
 const EditProductScreen = (props) => {
   const dispatch = useDispatch();
@@ -22,32 +47,79 @@ const EditProductScreen = (props) => {
     state.products.userProducts.find((product) => product.id === productId)
   );
 
-  const [title, setTitle] = useState(editProduct ? editProduct.title : "");
-  const [imageUrl, setImageUrl] = useState(
-    editProduct ? editProduct.imageUrl : ""
-  );
-  const [price, setPrice] = useState("");
-  const [description, setDescription] = useState(
-    editProduct ? editProduct.description : ""
-  );
+  const [formState, dispatchFormState] = useReducer(formReducer, {
+    inputValues: {
+      title: editProduct ? editProduct.title : "",
+      imageUrl: editProduct ? editProduct.imageUrl : "",
+      description: editProduct ? editProduct.description : "",
+      price: ""
+    },
+    inputValid: {
+      title: editProduct ? true : false,
+      imageUrl: editProduct ? true : false,
+      description: editProduct ? true : false,
+      price: editProduct ? true : false
+    },
+    formValid: editProduct ? true : false
+  });
+
+  // const [title, setTitle] = useState(editProduct ? editProduct.title : "");
+  // const [validTitle, setValidTitle] = useState(false);
+  // const [imageUrl, setImageUrl] = useState(
+  //   editProduct ? editProduct.imageUrl : ""
+  // );
+  // const [price, setPrice] = useState("");
+  // const [description, setDescription] = useState(
+  //   editProduct ? editProduct.description : ""
+  // );
 
   const submitHandler = useCallback(() => {
     console.log("Submiting!");
+    if (!formState.formValid) {
+      Alert.alert("Errors", "Please check errors in the form.", [
+        { text: "Okay" }
+      ]);
+      return;
+    }
     if (editProduct) {
       dispatch(
-        productAction.updateProduct(productId, title, description, imageUrl)
+        productAction.updateProduct(
+          productId,
+          formState.inputValues.title,
+          formState.inputValues.description,
+          formState.inputValues.imageUrl
+        )
       );
     } else {
       dispatch(
-        productAction.createProduct(title, description, imageUrl, +price)
+        productAction.createProduct(
+          formState.inputValues.title,
+          formState.inputValues.description,
+          formState.inputValues.imageUrl,
+          +formState.inputValues.price
+        )
       ); // dung toFixed nen phai +price
     }
     props.navigation.goBack();
-  }, [dispatch, productId, title, description, imageUrl, price]);
+  }, [dispatch, productId, formState]);
 
   useEffect(() => {
     props.navigation.setParams({ submit: submitHandler });
   }, [submitHandler]);
+
+  const editChangeHandler = (Identified, text) => {
+    let isValid = false;
+    if (text.trim().length > 0) {
+      // setValidTitle(false);
+      isValid = true;
+    }
+    dispatchFormState({
+      type: FORM_INPUT_UPDATE,
+      value: text,
+      isValid: isValid,
+      input: Identified
+    });
+  };
 
   return (
     <ScrollView>
@@ -56,16 +128,23 @@ const EditProductScreen = (props) => {
           <Text style={styles.label}>Title</Text>
           <TextInput
             style={styles.input}
-            value={title}
-            onChangeText={(text) => setTitle(text)}
+            value={formState.inputValues.title}
+            onChangeText={editChangeHandler.bind(this, "title")}
+            keyboardType="default"
+            autoCapitalize="sentences"
+            autoCorrect
+            returnKeyType="next"
+            onEndEditing={() => console.log("onEndEditing")}
+            onSubmitEditing={() => console.log("onSubmitEditing")}
           />
+          {!formState.inputValues.title && <Text>Please enter a valid Title </Text>}
         </View>
         <View style={styles.formControl}>
           <Text style={styles.label}>Image URL</Text>
           <TextInput
             style={styles.input}
-            value={imageUrl}
-            onChangeText={(text) => setImageUrl(text)}
+            value={formState.inputValues.imageUrl}
+            onChangeText={editChangeHandler.bind(this, "imageUrl")}
           />
         </View>
         {editProduct ? null : (
@@ -73,8 +152,8 @@ const EditProductScreen = (props) => {
             <Text style={styles.label}>Price</Text>
             <TextInput
               style={styles.input}
-              value={price}
-              onChangeText={(text) => setPrice(text)}
+              value={formState.inputValues.price}
+              onChangeText={editChangeHandler.bind(this, "price")}
             />
           </View>
         )}
@@ -82,8 +161,8 @@ const EditProductScreen = (props) => {
           <Text style={styles.label}>Description</Text>
           <TextInput
             style={styles.input}
-            value={description}
-            onChangeText={(text) => setDescription(text)}
+            value={formState.inputValues.description}
+            onChangeText={editChangeHandler.bind(this, "description")}
           />
         </View>
       </View>
